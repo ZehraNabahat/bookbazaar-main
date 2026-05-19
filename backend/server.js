@@ -9,6 +9,14 @@ import { notFound, errorHandler } from './middleware/error.js';
 
 dotenv.config();
 
+const corsOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+]
+  .flatMap((o) => (o ? o.split(',').map((s) => s.trim()) : []))
+  .filter(Boolean);
+
 // Connect to database
 connectDB();
 
@@ -17,7 +25,7 @@ const httpServer = createServer(app);
 
 // Middleware
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'http://localhost:3001'],
+  origin: corsOrigins,
   credentials: true
 }));
 
@@ -40,7 +48,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Socket.io setup for chat and order tracking
 const io = new Server(httpServer, {
   cors: {
-    origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'http://localhost:3001'],
+    origin: corsOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   }

@@ -1,18 +1,13 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { getAuthCookieOptions } from '../utils/cookieOptions.js';
 
 const generateToken = (res, id) => {
   const token = jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
     expiresIn: '30d',
   });
 
-  // Set JWT as HTTP-Only cookie (secure only over HTTPS in production)
-  res.cookie('jwt', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-  });
+  res.cookie('jwt', token, getAuthCookieOptions());
 
   return token;
 };
@@ -111,12 +106,7 @@ export const authAdmin = async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Private
 export const logoutUser = (req, res) => {
-  res.cookie('jwt', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-    expires: new Date(0),
-  });
+  res.cookie('jwt', '', getAuthCookieOptions({ maxAge: 0, expires: new Date(0) }));
   res.status(200).json({ message: 'Logged out successfully' });
 };
 

@@ -26,3 +26,7 @@ npm run dev
 \`\`\`
 
 The app will be available at http://localhost:3000
+
+## Deploy to Railway
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions (backend + frontend services, MongoDB, and environment variables).

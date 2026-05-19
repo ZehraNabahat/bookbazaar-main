@@ -26,7 +26,7 @@ export default function WishlistPage() {
   if (!user) {
     return (
       <div className="max-w-md mx-auto mt-12 text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-        <SEOHead title="Wishlist | BookBazaar" metaRobots="noindex,nofollow" />
+        <SEOHead title="Wishlist | BookBazaar" description="Sign in to view your saved books." metaRobots="noindex,nofollow" />
         <FiHeart className="mx-auto text-teal-500 mb-4" size={40} />
         <h1 className="text-2xl font-bold text-navy-900 mb-4">Your wishlist</h1>
         <p className="text-gray-600 mb-6">Sign in to save books you love and view them here.</p>
