@@ -1,35 +1,26 @@
 import mongoose from 'mongoose';
-import User from './models/User.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { ADMIN_EMAIL, ADMIN_DEFAULT_PASSWORD, ensureAdminUser } from './utils/ensureAdminUser.js';
 
-dotenv.config({ path: './.env' });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env'), override: true });
 
-const seedAdmin = async () => {
+const run = async () => {
+  const uri = (process.env.MONGO_URI || 'mongodb://localhost:27017/ecommerce-ai').trim();
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ecommerce-ai');
-    
-    // Check if admin exists
-    let admin = await User.findOne({ email: 'admin@bookbazaar.com' });
-    
-    if (admin) {
-      console.log('Admin already exists!');
-      admin.role = 'admin';
-      admin.password = 'admin123';
-      await admin.save();
-      console.log('Admin password reset to admin123 and role ensured as admin.');
-    } else {
-      admin = await User.create({
-        name: 'System Admin',
-        email: 'admin@bookbazaar.com',
-        password: 'admin123',
-        role: 'admin',
-      });
-      console.log('Admin created successfully!');
-    }
-    
-    console.log('Email: admin@bookbazaar.com');
-    console.log('Password: admin123');
-    
+    await mongoose.connect(uri);
+    console.log('Connected to database');
+
+    const { message } = await ensureAdminUser({ resetPassword: true });
+    console.log(message);
+    console.log('--- Admin login ---');
+    console.log('Email:', ADMIN_EMAIL);
+    console.log('Password:', ADMIN_DEFAULT_PASSWORD);
+    console.log('URL: http://localhost:3000/login');
+
+    await mongoose.disconnect();
     process.exit(0);
   } catch (error) {
     console.error(error);
@@ -37,4 +28,4 @@ const seedAdmin = async () => {
   }
 };
 
-seedAdmin();
+run();

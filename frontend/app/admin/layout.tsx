@@ -11,14 +11,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user || user.role !== 'admin') {
-        router.push('/login?redirect=/admin');
-      }
+    if (!loading && !user) {
+      router.push('/login?redirect=/admin');
     }
   }, [user, loading, router]);
 
-  if (loading || !user || user.role !== 'admin') return null;
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  }
+
+  if (!user) return null;
+
+  if (user.role !== 'admin') {
+    return (
+      <div className="max-w-lg mx-auto mt-16 card p-8 text-center">
+        <h1 className="text-xl font-bold text-navy-900 mb-2">Admin access required</h1>
+        <p className="text-gray-600 mb-4">
+          You are signed in as <strong>{user.email}</strong>, which is not an admin account.
+        </p>
+        <p className="text-sm text-gray-500 mb-6">
+          Run <code className="bg-gray-100 px-1 rounded">npm run seed:admin</code> in the backend folder,
+          then log in with <strong>admin@bookbazaar.com</strong> / <strong>admin123</strong>.
+        </p>
+        <Link href="/login?redirect=/admin" className="btn-primary inline-block">
+          Log in as admin
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-200px)]">

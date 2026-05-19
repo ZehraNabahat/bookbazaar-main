@@ -59,8 +59,9 @@ export default function NewProductPage() {
         isPublished: false
       }));
       setAiGenerated(true);
-    } catch (error) {
-      alert('AI Generation failed. Check console.');
+    } catch (error: any) {
+      const msg = error.response?.data?.message || error.message || 'AI generation failed';
+      alert(msg);
       console.error(error);
     } finally {
       setLoadingAI(false);

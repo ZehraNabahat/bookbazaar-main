@@ -4,6 +4,7 @@ import SEOHead from "@/components/SEOHead";
 import { notFound } from "next/navigation";
 import AddToCartSection from "@/components/AddToCartSection";
 import ProductViewTracker from "@/components/ProductViewTracker";
+import ProductReviews from "@/components/ProductReviews";
 
 async function getProduct(slug: string) {
   try {
@@ -99,6 +100,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </div>
         </div>
       </div>
+
+      <ProductReviews
+        productId={product._id}
+        productName={product.name}
+        productSlug={product.slug}
+      />
     </>
   );
 }

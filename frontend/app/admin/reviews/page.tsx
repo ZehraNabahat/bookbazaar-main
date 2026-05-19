@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import axios from '@/lib/axios';
 import { FiCheck, FiX } from 'react-icons/fi';
 
@@ -43,7 +44,13 @@ export default function AdminReviewsPage() {
               <div className="flex items-center gap-2 mb-2">
                 <span className="font-bold text-navy-900">{review.userId?.name}</span>
                 <span className="text-gray-400 text-sm">on</span>
-                <span className="font-semibold text-teal-600">{review.productId?.name}</span>
+                <Link
+                  href={`/products/${review.productId?.slug || ''}`}
+                  className="font-semibold text-teal-600 hover:underline"
+                  target="_blank"
+                >
+                  {review.productId?.name}
+                </Link>
               </div>
               <div className="flex items-center text-amber-400 text-sm mb-3">
                 {'★'.repeat(Math.floor(review.rating))}

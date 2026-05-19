@@ -213,9 +213,19 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
           <h3 className="font-bold text-navy-900 mb-4 border-b pb-2">Order Items</h3>
           <div className="space-y-3">
             {order.items.map((item: any) => (
-              <div key={item._id} className="flex justify-between text-sm">
+              <div key={item._id} className="flex justify-between items-center text-sm gap-4">
                 <span className="text-gray-600">{item.qty}x {item.productId?.name || 'Product'}</span>
-                <span className="font-medium">Rs. {(item.price * item.qty).toFixed(2)}</span>
+                <div className="flex items-center gap-3">
+                  {item.productId?.slug && (order.paymentStatus?.toLowerCase() === 'paid' || order.orderStatus === 'delivered') && (
+                    <Link
+                      href={`/products/${item.productId.slug}#reviews`}
+                      className="text-teal-600 hover:underline text-xs font-medium"
+                    >
+                      Write review
+                    </Link>
+                  )}
+                  <span className="font-medium">Rs. {(item.price * item.qty).toFixed(2)}</span>
+                </div>
               </div>
             ))}
             <div className="pt-3 border-t mt-3 flex justify-between font-bold text-navy-900">

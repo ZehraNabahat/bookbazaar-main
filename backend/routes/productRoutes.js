@@ -7,12 +7,12 @@ import {
   deleteProduct,
   getRecommendations
 } from '../controllers/productController.js';
-import { protect, requireAdmin } from '../middleware/auth.js';
+import { protect, requireAdmin, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 router.route('/')
-  .get(getProducts)
+  .get(optionalAuth, getProducts)
   .post(protect, requireAdmin, createProduct);
 
 router.post('/sell', protect, createProduct); // Same logic as createProduct, but for regular users

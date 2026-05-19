@@ -1,13 +1,15 @@
-import express from 'express';
 import dotenv from 'dotenv';
+
+dotenv.config({ override: true });
+
+import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/error.js';
-
-dotenv.config();
+import { ensureAdminUser, ADMIN_EMAIL, ADMIN_DEFAULT_PASSWORD } from './utils/ensureAdminUser.js';
 
 const corsOrigins = [
   process.env.FRONTEND_URL,
@@ -101,6 +103,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import stripeRoutes from './routes/stripeRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import adminReviewRoutes from './routes/adminReviewRoutes.js';
 import couponRoutes from './routes/couponRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
@@ -113,6 +116,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/payments', stripeRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/products/:productId/reviews', reviewRoutes);
+app.use('/api/reviews', adminReviewRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -120,6 +124,22 @@ app.use('/api/admin', adminRoutes);
 app.get('/', (req, res) => {
   res.send('E-Commerce API is running');
 });
+
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/dev/seed-admin', async (req, res) => {
+    try {
+      const { message } = await ensureAdminUser({ resetPassword: true });
+      res.json({
+        message,
+        email: ADMIN_EMAIL,
+        password: ADMIN_DEFAULT_PASSWORD,
+        loginUrl: 'http://localhost:3000/login',
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+}
 
 // Error Handling Middleware
 app.use(notFound);

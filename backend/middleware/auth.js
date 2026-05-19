@@ -36,4 +36,23 @@ const requireAdmin = (req, res, next) => {
   }
 };
 
-export { protect, requireAdmin };
+const optionalAuth = async (req, res, next) => {
+  let token;
+  if (req.cookies && req.cookies.jwt) {
+    token = req.cookies.jwt;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+      req.user = await User.findById(decoded.id).select('-password');
+    } catch (error) {
+      console.error('optionalAuth token verify failed:', error.message);
+    }
+  }
+  next();
+};
+
+export { protect, requireAdmin, optionalAuth };

@@ -90,7 +90,7 @@ export default function AdminProductsPage() {
                     )}
                   </td>
                   <td className="p-4 text-right space-x-3">
-                    <Link href={`/product/${product.slug}`} target="_blank" className="text-blue-600 hover:underline font-medium">Review</Link>
+                    <Link href={`/products/${product.slug}`} target="_blank" className="text-blue-600 hover:underline font-medium">View</Link>
                     <Link href={`/admin/products/${product._id}/edit`} className="text-teal-600 hover:underline">Edit</Link>
                     <button onClick={() => handleDelete(product._id)} className="text-red-500 hover:underline">Delete</button>
                   </td>

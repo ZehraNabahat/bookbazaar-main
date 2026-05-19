@@ -180,9 +180,33 @@ export default function InventoryAnalyticsPage() {
                 <span className="font-semibold text-amber-600">Low Stock (&lt;10)</span>
                 <span className="font-bold text-gray-900">{data.health.lowStock} items</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
                 <div className="bg-amber-400 h-3 rounded-full" style={{ width: '20%' }}></div>
               </div>
+
+              {data.health.lowStockItems && data.health.lowStockItems.length > 0 && (
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 mb-4">
+                  {data.health.lowStockItems.map((item: any) => {
+                    const suggestedRestock = Math.max(15, Math.ceil((item.sold || 0) * 1.5));
+                    return (
+                    <div key={item._id} className="flex items-center gap-3 p-2 bg-amber-50 border border-amber-100 rounded-lg">
+                      {item.images?.[0] ? (
+                        <img src={item.images[0]} alt={item.name} className="w-12 h-12 object-cover rounded" />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">No Img</div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
+                        <p className="text-xs text-gray-600 mt-1">Current: {item.stock} | Sold: {item.sold}</p>
+                        <p className="text-xs font-bold text-amber-600 bg-amber-100/50 inline-block px-1 mt-0.5 rounded">Suggested restock: {suggestedRestock} units</p>
+                      </div>
+                      <button onClick={() => handleRestock(item._id, suggestedRestock)} className="px-3 py-1 bg-navy-600 hover:bg-navy-700 text-white text-xs font-bold rounded shrink-0 shadow transition-colors">
+                        Restock
+                      </button>
+                    </div>
+                  )})}
+                </div>
+              )}
             </div>
 
             <div>
@@ -195,8 +219,10 @@ export default function InventoryAnalyticsPage() {
               </div>
 
               {data.health.outOfStockItems && data.health.outOfStockItems.length > 0 && (
-                <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
-                  {data.health.outOfStockItems.map((item: any) => (
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                  {data.health.outOfStockItems.map((item: any) => {
+                    const suggestedRestock = Math.max(15, Math.ceil((item.sold || 0) * 1.5));
+                    return (
                     <div key={item._id} className="flex items-center gap-3 p-2 bg-red-50 border border-red-100 rounded-lg">
                       {item.images?.[0] ? (
                         <img src={item.images[0]} alt={item.name} className="w-12 h-12 object-cover rounded" />
@@ -205,13 +231,14 @@ export default function InventoryAnalyticsPage() {
                       )}
                       <div className="flex-1">
                         <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
-                        <p className="text-xs font-bold text-red-600 bg-red-100/50 inline-block px-1 mt-1 rounded">Auto-restock suggested: 15 units</p>
+                        <p className="text-xs text-gray-600 mt-1">Current: {item.stock} | Sold: {item.sold}</p>
+                        <p className="text-xs font-bold text-red-600 bg-red-100/50 inline-block px-1 mt-0.5 rounded">Suggested restock: {suggestedRestock} units</p>
                       </div>
-                      <button onClick={() => handleRestock(item._id, 15)} className="px-3 py-1 bg-navy-600 hover:bg-navy-700 text-white text-xs font-bold rounded shrink-0 shadow transition-colors">
+                      <button onClick={() => handleRestock(item._id, suggestedRestock)} className="px-3 py-1 bg-navy-600 hover:bg-navy-700 text-white text-xs font-bold rounded shrink-0 shadow transition-colors">
                         Restock
                       </button>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
             </div>

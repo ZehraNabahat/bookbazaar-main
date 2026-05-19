@@ -94,7 +94,7 @@ export const getMyOrders = async (req, res) => {
 // @access  Private
 export const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('userId', 'name email').populate('items.productId', 'name image');
+    const order = await Order.findById(req.params.id).populate('userId', 'name email').populate('items.productId', 'name image slug');
 
     if (order) {
       // Check if user is admin or the order belongs to them

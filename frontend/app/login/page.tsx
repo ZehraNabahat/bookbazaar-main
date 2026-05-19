@@ -20,8 +20,17 @@ function LoginForm() {
     e.preventDefault();
     try {
       const { data } = await axios.post('/api/auth/login', { email, password });
+
+      if (redirect.startsWith('/admin') && data.role !== 'admin') {
+        await axios.post('/api/auth/logout').catch(() => {});
+        setError(
+          'This account is not an admin. Use admin@bookbazaar.com / admin123 after running: cd backend && npm run seed:admin'
+        );
+        return;
+      }
+
       login(data);
-      if (data.role === 'admin' && redirect === '/') {
+      if (data.role === 'admin' && (redirect === '/' || redirect.startsWith('/admin'))) {
         router.push('/admin');
       } else {
         router.push(redirect);

@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import ChatMessage from '../models/ChatMessage.js';
 import Order from '../models/Order.js';
 import {
@@ -13,11 +12,14 @@ import {
 } from '../services/chatbotService.js';
 import { FAQ_ENTRIES } from '../data/faqData.js';
 import { BOOK_CATEGORIES, BOOK_CONDITIONS } from '../data/catalogFilters.js';
-import { hasValidGeminiApiKey } from '../utils/gemini.js';
+import {
+  hasValidGeminiApiKey,
+  getGeminiModel,
+  generateWithGemini,
+  buildSeoFallback,
+  parseJsonFromModelText,
+} from '../utils/gemini.js';
 import { resolveSessionId, sessionBelongsToUser } from '../utils/chatSession.js';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 async function processWithRuleBased(message, context) {
   const action = detectIntentFallback(message);
@@ -41,6 +43,7 @@ async function processWithGemini(message, history, user, context) {
     parts: [{ text: msg.content }],
   }));
 
+  const model = getGeminiModel();
   const chat = model.startChat({
     history: [
       { role: 'user', parts: [{ text: buildSystemPrompt(user) }] },
@@ -68,32 +71,35 @@ async function processWithGemini(message, history, user, context) {
 // @route   POST /api/ai/admin/generate-seo
 // @access  Private/Admin
 export const generateSeoContent = async (req, res) => {
+  const { name, description } = req.body;
+
+  if (!name?.trim()) {
+    return res.status(400).json({ message: 'Product name is required' });
+  }
+
+  const prompt = `Generate SEO metadata for this e-commerce book product.
+Product name: ${name}
+Description: ${description || name}
+
+Return ONLY valid JSON (no markdown):
+{"seoTitle":"max 60 characters","seoDescription":"max 160 characters","keywords":["five","relevant","keywords"]}`;
+
   try {
-    const { name, description } = req.body;
-
-    const prompt = `Generate an SEO title (max 60 chars), meta description (max 160 chars), and 5 keywords for this e-commerce product: ${name}. ${description}.
-    Return ONLY a valid JSON object in this exact format: {"seoTitle": "...", "seoDescription": "...", "keywords": ["...", "..."]}`;
-
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-
-    const cleanedText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const jsonStart = cleanedText.indexOf('{');
-    const jsonEnd = cleanedText.lastIndexOf('}');
-    const finalJsonString = cleanedText.substring(jsonStart, jsonEnd + 1);
-    
-    const parsedData = JSON.parse(finalJsonString);
-
-    res.json(parsedData);
-  } catch (error) {
-    if (error.message.includes('API key not valid') || process.env.GEMINI_API_KEY === 'your_gemini_api_key' || !process.env.GEMINI_API_KEY) {
-      return res.json({
-        seoTitle: `Buy ${req.body.name || 'Product'} Online | BookBazaar`,
-        seoDescription: `Shop for ${req.body.name || 'this amazing product'} at BookBazaar. Get the best prices, fast shipping, and excellent customer service.`,
-        keywords: [(req.body.name || '').toLowerCase(), 'buy online', 'bookbazaar', 'discount', 'books']
-      });
+    if (!hasValidGeminiApiKey()) {
+      return res.json(buildSeoFallback(name, description));
     }
-    res.status(500).json({ message: 'Failed to generate SEO content: ' + error.message });
+
+    const responseText = await generateWithGemini(prompt);
+    const parsedData = parseJsonFromModelText(responseText);
+
+    res.json({
+      seoTitle: String(parsedData.seoTitle || '').slice(0, 60),
+      seoDescription: String(parsedData.seoDescription || '').slice(0, 160),
+      keywords: Array.isArray(parsedData.keywords) ? parsedData.keywords : [],
+    });
+  } catch (error) {
+    console.warn('SEO generation fallback:', error.message);
+    res.json(buildSeoFallback(name, description));
   }
 };
 
@@ -150,11 +156,8 @@ export const predictDemand = async (req, res) => {
       "suggestions": [{"productName": "...", "suggestedRestock": number, "reason": "..."}]
     }`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-
-    const cleanedText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const parsedData = JSON.parse(cleanedText);
+    const responseText = await generateWithGemini(prompt);
+    const parsedData = parseJsonFromModelText(responseText);
 
     res.json(parsedData);
   } catch (error) {

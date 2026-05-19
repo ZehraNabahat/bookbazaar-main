@@ -58,10 +58,10 @@ export default function ProfilePage() {
               
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 flex justify-between items-center">
                 <div>
-                  <h4 className="font-bold text-gray-900">Order History</h4>
-                  <p className="text-sm text-gray-500">Track your recent book purchases</p>
+                  <h4 className="font-bold text-gray-900">My Reviews</h4>
+                  <p className="text-sm text-gray-500">Reviews you wrote for purchased books</p>
                 </div>
-                <span className="text-gray-400 text-sm italic">Coming soon</span>
+                <Link href="/my-reviews" className="text-teal-600 font-medium hover:underline">View</Link>
               </div>
               
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 flex justify-between items-center">

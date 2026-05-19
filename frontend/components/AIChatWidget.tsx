@@ -59,15 +59,21 @@ const QUICK_PROMPTS = [
 
 function ProductResults({
   products,
+  cartItems,
   onAddToCart,
+  onRemoveFromCart,
 }: {
   products: ProductCard[];
+  cartItems?: CartLineItem[];
   onAddToCart?: (p: ProductCard) => void;
+  onRemoveFromCart?: (productId: string) => void;
 }) {
   if (!products?.length) return null;
   return (
     <div className="mt-2 space-y-2 max-h-52 overflow-y-auto">
-      {products.map((p) => (
+      {products.map((p) => {
+        const inCart = cartItems?.find((i) => i.productId === p._id);
+        return (
         <div key={p._id} className="flex gap-2 p-2 bg-gray-50 rounded-lg border border-gray-100">
         <Link
           href={`/products/${p.slug}`}
@@ -88,18 +94,40 @@ function ProductResults({
             <p className="text-sm font-bold text-teal-700">Rs. {p.price?.toFixed(2)}</p>
           </div>
         </Link>
-          {onAddToCart && (
-            <button
-              type="button"
-              onClick={() => onAddToCart(p)}
-              className="shrink-0 self-center w-8 h-8 rounded-full bg-teal-500 text-navy-900 flex items-center justify-center hover:bg-teal-400"
-              title="Add to cart"
-            >
-              <FiPlus size={16} />
-            </button>
-          )}
+          <div className="flex flex-col gap-1 justify-center shrink-0">
+            {onAddToCart && !inCart && (
+              <button
+                type="button"
+                onClick={() => onAddToCart(p)}
+                className="w-8 h-8 rounded-full bg-teal-500 text-navy-900 flex items-center justify-center hover:bg-teal-400 transition-colors"
+                title="Add to cart"
+              >
+                <FiPlus size={16} />
+              </button>
+            )}
+            {onRemoveFromCart && inCart && (
+              <button
+                type="button"
+                onClick={() => onRemoveFromCart(p._id)}
+                className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-colors"
+                title="Remove from cart"
+              >
+                <FiTrash2 size={16} />
+              </button>
+            )}
+            {onAddToCart && inCart && (
+              <button
+                type="button"
+                onClick={() => onAddToCart(p)}
+                className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center hover:bg-teal-200 transition-colors"
+                title="Add another to cart"
+              >
+                <FiPlus size={16} />
+              </button>
+            )}
+          </div>
         </div>
-      ))}
+      )})}
     </div>
   );
 }
@@ -313,7 +341,20 @@ export default function AIChatWidget() {
     });
     setMessages((prev) => [
       ...prev,
-      { role: 'ai', content: `Added "${p.name}" to your cart.` },
+      { 
+        role: 'ai', 
+        content: `Added "${p.name}" to your cart.`,
+        dataType: 'cart_action_success',
+        data: { action: 'add' }
+      },
+    ]);
+  };
+
+  const handleRemoveProductFromCart = (productId: string) => {
+    removeFromCart(productId);
+    setMessages((prev) => [
+      ...prev,
+      { role: 'ai', content: 'Removed item from your cart.' },
     ]);
   };
 
@@ -452,7 +493,7 @@ export default function AIChatWidget() {
 
     if (msg.dataType === 'products') {
       const products = (msg.data as { products: ProductCard[] }).products;
-      return <ProductResults products={products} onAddToCart={handleAddProductToCart} />;
+      return <ProductResults products={products} cartItems={cart} onAddToCart={handleAddProductToCart} onRemoveFromCart={handleRemoveProductFromCart} />;
     }
     if (msg.dataType === 'order') {
       return <OrderTrackingCard order={msg.data as Record<string, unknown>} />;
@@ -483,6 +524,18 @@ export default function AIChatWidget() {
             Go to checkout →
           </Link>
         </p>
+      );
+    }
+    if (msg.dataType === 'cart_action_success' || msg.dataType === 'cart_add') {
+      return (
+        <div className="mt-3 flex gap-2 w-full">
+          <Link href="/cart" className="flex-1 text-center py-2 px-3 bg-white border border-teal-500 text-teal-600 rounded-lg text-xs font-semibold hover:bg-teal-50 transition-colors">
+            View Cart
+          </Link>
+          <Link href="/checkout" className="flex-1 text-center py-2 px-3 bg-teal-500 text-navy-900 rounded-lg text-xs font-semibold hover:bg-teal-400 transition-colors">
+            Checkout →
+          </Link>
+        </div>
       );
     }
     return null;

@@ -87,12 +87,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         ...prev,
         seoTitle: data.seoTitle || prev.seoTitle,
         seoDescription: data.seoDescription || prev.seoDescription,
-        seoKeywords: Array.isArray(data.keywords) ? data.keywords.join(', ') : prev.seoKeywords,
-        isPublished: false
+        seoKeywords: Array.isArray(data.keywords) ? data.keywords.join(', ') : prev.seoKeywords
       }));
       setAiGenerated(true);
-    } catch (error) {
-      alert('AI Generation failed. Check console.');
+    } catch (error: any) {
+      const msg = error.response?.data?.message || error.message || 'AI generation failed';
+      alert(msg);
       console.error(error);
     } finally {
       setLoadingAI(false);
