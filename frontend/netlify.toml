@@ -1,6 +1,9 @@
-# Next.js App Router — do not publish `.next` as static files.
+# Used only if Netlify "Base directory" is set to frontend in the dashboard
 [build]
-  command = "npm run build"
+  command = "npm ci && npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

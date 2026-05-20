@@ -1,7 +1,12 @@
-# Monorepo: Netlify must build from the Next.js app in /frontend
+# BookBazaar frontend — https://docs.netlify.com/frameworks/next-js/
 [build]
   base = "frontend"
-  command = "npm run build"
+  command = "npm ci && npm run build"
+  # Do NOT set publish — @netlify/plugin-nextjs handles output
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
