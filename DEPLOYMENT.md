@@ -85,6 +85,8 @@ node seedAdmin.js
 
 | Issue | Fix |
 |-------|-----|
+| **404 "Page not found" on the site URL** | Open the **frontend** service domain, not the backend (backend `/` only returns `E-Commerce API is running`). In Railway **Settings → Source**, set **Root Directory** to `frontend` for the web app and `backend` for the API. Redeploy after changing. |
+| Netlify shows a generic 404 | Do not set publish directory to `.next`. Use the repo `netlify.toml` (Next.js plugin) or set **Base directory** to `frontend` in Netlify. |
 | Login works locally but not on Railway | Ensure `FRONTEND_URL` matches the frontend URL exactly; redeploy backend after changing it |
 | API 404 / CORS errors | `NEXT_PUBLIC_API_URL` must be the backend URL; redeploy frontend |
 | Build fails on frontend | Set `NEXT_PUBLIC_API_URL` and redeploy |

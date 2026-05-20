@@ -1,6 +1,5 @@
-# Monorepo: Netlify must build from the Next.js app in /frontend
+# Next.js App Router — do not publish `.next` as static files.
 [build]
-  base = "frontend"
   command = "npm run build"
 
 [[plugins]]
